@@ -1,0 +1,153 @@
+{
+  "check_interval_seconds": 60,
+  "alert_after_failures": 2,
+  "smtp": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 465,
+    "use_ssl": true,
+    "sender_email": "trinitydentalit@gmail.com",
+    "sender_password": "flunurdypltwvkoo"
+  },
+  "targets": [
+    {
+      "name": "Crosby (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.124.85.57",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Leo Server 2 (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.64.196.3",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Cleveland (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.75.88.110",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Conroe (Windows Server 2022)",
+      "method": "tcp",
+      "host": "100.79.151.26",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "DH (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.64.86.121",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Eastex (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.79.105.81",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Humble (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.66.165.73",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Katy (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.120.153.33",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Livingston (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.83.215.56",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Magnolia (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.70.7.105",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Maxey (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.73.228.93",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "New Forest (Windows Server 2022)",
+      "method": "tcp",
+      "host": "100.114.255.108",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "OD-RDS (Windows Server 2022)",
+      "method": "tcp",
+      "host": "100.92.53.80",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "PD2 (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.71.184.28",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Pearl (Windows Server 2019)",
+      "method": "tcp",
+      "host": "100.111.208.49",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Rosenberg (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.73.131.3",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Sealy (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.74.37.63",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Tomball (Windows Server 2022)",
+      "method": "tcp",
+      "host": "100.65.66.120",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Tomball3D (Windows 11 22H2)",
+      "method": "tcp",
+      "host": "100.117.106.37",
+      "port": 3389,
+      "timeout": 5
+    },
+    {
+      "name": "Waller (Windows Server 2025)",
+      "method": "tcp",
+      "host": "100.87.248.80",
+      "port": 3389,
+      "timeout": 5
+    }
+  ]
+}

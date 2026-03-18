@@ -1,0 +1,19 @@
+{
+  "users": [
+    {
+      "name": "Zain",
+      "email": "zain@trinitydentalcenters.com",
+      "active": true
+    },
+    {
+      "name": "Leo",
+      "email": "leo@odysseysolutions.co",
+      "active": true
+    },
+    {
+      "name": "R. Lopez",
+      "email": "rlopez@trinitydentalcenters.com",
+      "active": true
+    }
+  ]
+}

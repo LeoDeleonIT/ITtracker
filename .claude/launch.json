@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dashboard (Flask)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["dashboard.py"],
+      "port": 5000
+    },
+    {
+      "name": "Monitor Service",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["monitor.py"],
+      "port": null
+    }
+  ]
+}
