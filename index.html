@@ -4908,12 +4908,12 @@ function escapeHtml(str) {
 }
 </script>
 
-<!-- TDC Live Server Monitor — simple polling, no observer -->
+<!-- TDC Live Server Monitor — fetches from GitHub status.json -->
 <script>
 (function () {
-  var API      = 'http://localhost:5000/api/status';
-  var _pollTmr = null;
-  var _active  = false;
+  var STATUS_URL = 'https://raw.githubusercontent.com/LeoDeleonIT/ITtracker/main/status.json';
+  var _pollTmr   = null;
+  var _active    = false;
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -4921,19 +4921,23 @@ function escapeHtml(str) {
 
   function renderGrid(data) {
     var grid = document.getElementById('server-grid');
-    if (!grid || !Array.isArray(data) || !data.length) return;
+    if (!grid || !Array.isArray(data)) return;
+    if (!data.length) {
+      grid.innerHTML = '<div style="color:var(--text-muted);padding:20px;">No server data yet — make sure dashboard.py is running.</div>';
+      return;
+    }
     var html = '';
     data.forEach(function(item) {
       var up  = item.online;
       var pct = (item.uptime_pct != null) ? item.uptime_pct : 100;
-      html += '<div class="server-card" style="border:1px solid '+(up?'rgba(0,230,118,.4)':'rgba(255,23,68,.4)')+';border-radius:12px;padding:16px;margin-bottom:4px;">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
-        +'<span style="font-weight:600;color:var(--text-primary);">'+esc(item.name)+'</span>'
-        +'<span style="padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700;'
+      var col = up ? 'rgba(0,230,118,.35)' : 'rgba(255,23,68,.35)';
+      html += '<div class="server-card" style="background:var(--bg-card);border:1px solid '+col+';border-radius:12px;padding:16px;background-image:linear-gradient(135deg,'+(up?'rgba(0,230,118,.06)':'rgba(255,23,68,.06)')+',transparent);">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+        +'<span style="font-size:1rem;font-weight:600;color:var(--text-primary);">'+esc(item.name)+'</span>'
+        +'<span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;'
         +(up?'background:rgba(0,230,118,.15);color:var(--success)':'background:rgba(255,23,68,.15);color:var(--danger)')+';">'
         +(up?'ONLINE':'OFFLINE')+'</span></div>'
-        +'<div style="font-size:.8rem;color:var(--text-secondary);">Method: '+esc((item.method||'tcp').toUpperCase())+'</div>'
-        +'<div style="font-size:.8rem;color:var(--text-secondary);">Host: '+esc(item.host||item.url||'')+'</div>'
+        +'<div style="font-size:.8rem;color:var(--text-secondary);">&#127760; '+esc(item.host||item.url||'')+'</div>'
         +'<div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;margin-top:10px;overflow:hidden;">'
         +'<div style="height:100%;width:'+pct+'%;background:'+(up?'var(--success)':'var(--danger)')+';border-radius:3px;"></div></div>'
         +'<div style="font-size:.75rem;color:var(--text-muted);margin-top:3px;">Session uptime: '+pct+'%</div>'
@@ -4941,12 +4945,12 @@ function escapeHtml(str) {
     });
     grid.innerHTML = html;
     var el = document.getElementById('servers-last-check');
-    if (el) el.textContent = 'Live: ' + new Date().toLocaleTimeString();
+    if (el) el.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
   }
 
   function fetchAndRender() {
     if (!_active) return;
-    fetch(API)
+    fetch(STATUS_URL + '?_=' + Date.now(), {cache: 'no-store'})
       .then(function(r){ return r.json(); })
       .then(renderGrid)
       .catch(function(){});
@@ -4956,7 +4960,7 @@ function escapeHtml(str) {
     _active = true;
     fetchAndRender();
     clearInterval(_pollTmr);
-    _pollTmr = setInterval(fetchAndRender, 10000); // every 10s — beats the 30s original checker
+    _pollTmr = setInterval(fetchAndRender, 60000);
   }
 
   function stopPoll() {
@@ -4969,9 +4973,9 @@ function escapeHtml(str) {
     window.checkAllServers   = function() { fetchAndRender(); };
     window.setServerInterval = function() {
       var sel = document.getElementById('server-interval');
-      var ms  = sel ? parseInt(sel.value,10)*1000 : 30000;
+      var ms  = sel ? parseInt(sel.value,10)*1000 : 60000;
       clearInterval(_pollTmr);
-      _pollTmr = setInterval(fetchAndRender, Math.min(ms, 10000));
+      _pollTmr = setInterval(fetchAndRender, Math.max(ms, 60000));
       fetchAndRender();
     };
     if (document.querySelector('[data-tab="servers"].active')) startPoll();

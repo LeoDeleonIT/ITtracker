@@ -4,8 +4,10 @@ Run with:  python dashboard.py
 Visit:     http://localhost:5000
 """
 
+import base64
 import json
 import os
+import threading
 import time
 import urllib.request
 from datetime import datetime
@@ -19,8 +21,10 @@ TRACKER_CACHE = "tracker_cache.html"
 GITHUB_URL    = "https://raw.githubusercontent.com/majinist/tdc-it-asset-tracker/main/index.html"
 
 # In-memory uptime history: {name: [{"time": ..., "online": bool}, ...]}
-history   = {}
-MAX_HIST  = 50
+history         = {}
+MAX_HIST        = 50
+_latest_results = []
+_status_sha     = None
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -51,6 +55,82 @@ def get_latest_results() -> list:
         r["uptime_pct"] = _calc_uptime(history.get(name, []))
         results.append(r)
     return results
+
+
+def load_token() -> str:
+    """Read GitHub token from secrets.json (never committed)."""
+    try:
+        with open("secrets.json") as f:
+            return json.load(f).get("github_token", "").strip()
+    except Exception:
+        return ""
+
+
+def push_to_github(results: list):
+    """Push server status to status.json in the GitHub repo."""
+    global _status_sha
+    cfg    = load_config().get("github", {})
+    token  = load_token()
+    repo   = cfg.get("repo", "LeoDeleonIT/ITtracker")
+    branch = cfg.get("branch", "main")
+    if not token:
+        return
+
+    content_b64 = base64.b64encode(
+        json.dumps(results, separators=(",", ":")).encode()
+    ).decode()
+
+    api_url = f"https://api.github.com/repos/{repo}/contents/status.json"
+    headers = {
+        "Authorization": f"token {token}",
+        "Content-Type": "application/json",
+        "User-Agent": "TDC-Dashboard/1.0",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    # Fetch current SHA if we don't have it
+    if not _status_sha:
+        try:
+            req = urllib.request.Request(f"{api_url}?ref={branch}", headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                _status_sha = json.loads(resp.read()).get("sha", "")
+        except Exception:
+            pass
+
+    body = {
+        "message": f"status {datetime.now().strftime('%H:%M:%S')}",
+        "content": content_b64,
+        "branch": branch,
+    }
+    if _status_sha:
+        body["sha"] = _status_sha
+
+    try:
+        req = urllib.request.Request(
+            api_url,
+            data=json.dumps(body).encode(),
+            headers=headers,
+            method="PUT",
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            _status_sha = json.loads(resp.read()).get("content", {}).get("sha", _status_sha)
+            print(f"[+] status.json pushed to GitHub")
+    except Exception as e:
+        print(f"[!] GitHub push failed: {e}")
+        _status_sha = None
+
+
+def background_checker():
+    """Run server checks every 60 s and push results to GitHub."""
+    global _latest_results
+    while True:
+        try:
+            results = get_latest_results()
+            _latest_results = results
+            push_to_github(results)
+        except Exception as e:
+            print(f"[!] Background check error: {e}")
+        time.sleep(60)
 
 
 def fetch_tracker_html() -> str:
@@ -270,8 +350,7 @@ def index():
 
 @app.route("/api/status")
 def api_status():
-    results = get_latest_results()
-    resp = jsonify(results)
+    resp = jsonify(_latest_results)
     # CORS — allow the GitHub Pages site to call this endpoint
     resp.headers["Access-Control-Allow-Origin"]  = "*"
     resp.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
@@ -305,6 +384,12 @@ if __name__ == "__main__":
     # Pre-fetch the tracker HTML on startup
     if not os.path.exists(TRACKER_CACHE):
         fetch_tracker_html()
+
+    # Start background checker thread
+    t = threading.Thread(target=background_checker, daemon=True)
+    t.start()
+    print("[*] Background checker started — pushing to GitHub every 60s")
+
     print("\n" + "=" * 55)
     print("  TDC IT Asset Tracker + Live Server Monitor")
     print("  http://localhost:5000")

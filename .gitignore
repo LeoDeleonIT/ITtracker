@@ -1,0 +1,5 @@
+secrets.json
+config.json
+tracker_cache.html
+__pycache__/
+*.pyc
